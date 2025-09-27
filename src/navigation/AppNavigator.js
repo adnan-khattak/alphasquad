@@ -4,9 +4,9 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { COLORS } from '../constants/colors';
 
 // Import screens
-import SplashScreen from '../screens/SplashScreen';
-import AuthScreen from '../screens/AuthScreen';
-import HomeScreen from '../screens/HomeScreen';
+import BookListScreen from '../screens/BookListScreen';
+import AddBookScreen from '../screens/AddBookScreen';
+import UpdateProgressScreen from '../screens/UpdateProgressScreen';
 
 const Stack = createStackNavigator();
 
@@ -14,32 +14,32 @@ const AppNavigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Splash"
+        initialRouteName="BookList"
         screenOptions={{
           headerShown: false,
           cardStyle: { backgroundColor: COLORS.background },
-          gestureEnabled: false,
+          gestureEnabled: true,
         }}
       >
         <Stack.Screen
-          name="Splash"
-          component={SplashScreen}
+          name="BookList"
+          component={BookListScreen}
           options={{
             gestureEnabled: false,
           }}
         />
         <Stack.Screen
-          name="Auth"
-          component={AuthScreen}
+          name="AddBook"
+          component={AddBookScreen}
           options={{
-            gestureEnabled: false,
+            gestureEnabled: true,
           }}
         />
         <Stack.Screen
-          name="Home"
-          component={HomeScreen}
+          name="UpdateProgress"
+          component={UpdateProgressScreen}
           options={{
-            gestureEnabled: false,
+            gestureEnabled: true,
           }}
         />
       </Stack.Navigator>
