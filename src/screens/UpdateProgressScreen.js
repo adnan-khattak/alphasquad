@@ -13,11 +13,12 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../constants/colors';
+import { useTheme } from '../contexts/ThemeContext';
 import { SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/dimensions';
 import { BookStorage } from '../utils/bookStorage';
 
 const UpdateProgressScreen = ({ navigation, route }) => {
+  const { colors, isDark } = useTheme();
   const { book } = route.params;
   const [pagesReadToday, setPagesReadToday] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,9 +43,9 @@ const UpdateProgressScreen = ({ navigation, route }) => {
   };
 
   const getProgressColor = (progress) => {
-    if (progress >= 100) return COLORS.success;
-    if (progress >= 75) return COLORS.warning;
-    return COLORS.accent;
+    if (progress >= 100) return colors.success;
+    if (progress >= 75) return colors.warning;
+    return colors.accent;
   };
 
   const handleUpdateProgress = async () => {
@@ -157,14 +158,187 @@ const UpdateProgressScreen = ({ navigation, route }) => {
   const progressColor = getProgressColor(progress);
   const remainingPages = currentBook.totalPages - currentBook.pagesRead;
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: SPACING.xl,
+      paddingVertical: SPACING.lg,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.textMuted,
+    },
+    backButton: {
+      padding: SPACING.sm,
+      marginLeft: -SPACING.sm,
+    },
+    headerTitle: {
+      fontSize: FONT_SIZES.lg,
+      fontWeight: '600',
+      color: colors.textPrimary,
+    },
+    placeholder: {
+      width: 40,
+    },
+    keyboardAvoid: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      paddingHorizontal: SPACING.xl,
+      paddingVertical: SPACING.lg,
+    },
+    bookInfoCard: {
+      backgroundColor: colors.surface,
+      borderRadius: BORDER_RADIUS.lg,
+      padding: SPACING.lg,
+      marginBottom: SPACING.xl,
+      borderWidth: 1,
+      borderColor: colors.textMuted,
+    },
+    bookTitle: {
+      fontSize: FONT_SIZES.xl,
+      fontWeight: '600',
+      color: colors.textPrimary,
+      marginBottom: SPACING.sm,
+    },
+    bookPages: {
+      fontSize: FONT_SIZES.md,
+      color: colors.textSecondary,
+      marginBottom: SPACING.lg,
+    },
+    progressContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: SPACING.md,
+    },
+    progressBar: {
+      flex: 1,
+      height: 8,
+      backgroundColor: colors.textMuted,
+      borderRadius: 4,
+      marginRight: SPACING.md,
+    },
+    progressFill: {
+      height: '100%',
+      borderRadius: 4,
+    },
+    progressText: {
+      fontSize: FONT_SIZES.md,
+      fontWeight: '600',
+      color: colors.textPrimary,
+      minWidth: 40,
+      textAlign: 'right',
+    },
+    remainingText: {
+      fontSize: FONT_SIZES.sm,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    completedBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: SPACING.md,
+    },
+    completedText: {
+      fontSize: FONT_SIZES.md,
+      fontWeight: '600',
+      color: colors.success,
+      marginLeft: SPACING.sm,
+    },
+    inputGroup: {
+      marginBottom: SPACING.xl,
+    },
+    label: {
+      fontSize: FONT_SIZES.md,
+      fontWeight: '600',
+      color: colors.textPrimary,
+      marginBottom: SPACING.sm,
+    },
+    input: {
+      backgroundColor: colors.surface,
+      borderRadius: BORDER_RADIUS.md,
+      padding: SPACING.lg,
+      fontSize: FONT_SIZES.xl,
+      fontWeight: '600',
+      color: colors.textPrimary,
+      borderWidth: 1,
+      borderColor: colors.textMuted,
+      textAlign: 'center',
+    },
+    helperText: {
+      fontSize: FONT_SIZES.sm,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      marginTop: SPACING.sm,
+    },
+    buttonContainer: {
+      marginTop: 'auto',
+      paddingBottom: SPACING.xl,
+    },
+    updateButton: {
+      backgroundColor: colors.accent,
+      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.lg,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: SPACING.md,
+    },
+    disabledButton: {
+      opacity: 0.6,
+    },
+    updateButtonText: {
+      fontSize: FONT_SIZES.md,
+      fontWeight: '600',
+      color: colors.background,
+      marginLeft: SPACING.sm,
+    },
+    finishButton: {
+      backgroundColor: 'transparent',
+      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.lg,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: colors.accent,
+      marginBottom: SPACING.md,
+    },
+    finishButtonText: {
+      fontSize: FONT_SIZES.md,
+      fontWeight: '600',
+      color: colors.accent,
+      marginLeft: SPACING.sm,
+    },
+    cancelButton: {
+      backgroundColor: 'transparent',
+      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.lg,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.textMuted,
+    },
+    cancelButtonText: {
+      fontSize: FONT_SIZES.md,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+  });
+
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
       
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={handleCancel}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />
+          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Update Progress</Text>
         <View style={styles.placeholder} />
@@ -207,7 +381,7 @@ const UpdateProgressScreen = ({ navigation, route }) => {
 
             {progress >= 100 && (
               <View style={styles.completedBadge}>
-                <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
+                <Ionicons name="checkmark-circle" size={20} color={colors.success} />
                 <Text style={styles.completedText}>Completed!</Text>
               </View>
             )}
@@ -221,7 +395,7 @@ const UpdateProgressScreen = ({ navigation, route }) => {
               value={pagesReadToday}
               onChangeText={setPagesReadToday}
               placeholder="Enter pages read today"
-              placeholderTextColor={COLORS.textMuted}
+              placeholderTextColor={colors.textMuted}
               keyboardType="numeric"
               returnKeyType="done"
               maxLength={6}
@@ -243,7 +417,7 @@ const UpdateProgressScreen = ({ navigation, route }) => {
                 <Text style={styles.updateButtonText}>Updating...</Text>
               ) : (
                 <>
-                  <Ionicons name="checkmark" size={20} color={COLORS.background} />
+                  <Ionicons name="checkmark" size={20} color={colors.background} />
                   <Text style={styles.updateButtonText}>Update Progress</Text>
                 </>
               )}
@@ -255,7 +429,7 @@ const UpdateProgressScreen = ({ navigation, route }) => {
                 onPress={handleFinishBook}
                 disabled={loading}
               >
-                <Ionicons name="flag" size={20} color={COLORS.accent} />
+                <Ionicons name="flag" size={20} color={colors.accent} />
                 <Text style={styles.finishButtonText}>Mark as Complete</Text>
               </TouchableOpacity>
             )}
@@ -273,179 +447,5 @@ const UpdateProgressScreen = ({ navigation, route }) => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.textMuted,
-  },
-  backButton: {
-    padding: SPACING.sm,
-    marginLeft: -SPACING.sm,
-  },
-  headerTitle: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-  },
-  placeholder: {
-    width: 40,
-  },
-  keyboardAvoid: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.lg,
-  },
-  bookInfoCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg,
-    marginBottom: SPACING.xl,
-    borderWidth: 1,
-    borderColor: COLORS.textMuted,
-  },
-  bookTitle: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.sm,
-  },
-  bookPages: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.lg,
-  },
-  progressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-  },
-  progressBar: {
-    flex: 1,
-    height: 8,
-    backgroundColor: COLORS.textMuted,
-    borderRadius: 4,
-    marginRight: SPACING.md,
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  progressText: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    minWidth: 40,
-    textAlign: 'right',
-  },
-  remainingText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-  },
-  completedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: SPACING.md,
-  },
-  completedText: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.success,
-    marginLeft: SPACING.sm,
-  },
-  inputGroup: {
-    marginBottom: SPACING.xl,
-  },
-  label: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.sm,
-  },
-  input: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.lg,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textPrimary,
-    borderWidth: 1,
-    borderColor: COLORS.textMuted,
-    textAlign: 'center',
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '600',
-  },
-  helperText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: SPACING.sm,
-  },
-  buttonContainer: {
-    marginTop: 'auto',
-    paddingBottom: SPACING.xl,
-  },
-  updateButton: {
-    backgroundColor: COLORS.accent,
-    borderRadius: BORDER_RADIUS.md,
-    paddingVertical: SPACING.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: SPACING.md,
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  updateButtonText: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.background,
-    marginLeft: SPACING.sm,
-  },
-  finishButton: {
-    backgroundColor: 'transparent',
-    borderRadius: BORDER_RADIUS.md,
-    paddingVertical: SPACING.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.accent,
-    marginBottom: SPACING.md,
-  },
-  finishButtonText: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.accent,
-    marginLeft: SPACING.sm,
-  },
-  cancelButton: {
-    backgroundColor: 'transparent',
-    borderRadius: BORDER_RADIUS.md,
-    paddingVertical: SPACING.lg,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.textMuted,
-  },
-  cancelButtonText: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-  },
-});
 
 export default UpdateProgressScreen;

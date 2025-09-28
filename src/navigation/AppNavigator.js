@@ -1,23 +1,27 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { COLORS } from '../constants/colors';
+import { useTheme } from '../contexts/ThemeContext';
 
 // Import screens
 import BookListScreen from '../screens/BookListScreen';
 import AddBookScreen from '../screens/AddBookScreen';
 import UpdateProgressScreen from '../screens/UpdateProgressScreen';
+import StatsScreen from '../screens/StatsScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
+  const { colors, isDark } = useTheme();
+
   return (
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="BookList"
         screenOptions={{
           headerShown: false,
-          cardStyle: { backgroundColor: COLORS.background },
+          cardStyle: { backgroundColor: colors.background },
           gestureEnabled: true,
         }}
       >
@@ -38,6 +42,20 @@ const AppNavigator = () => {
         <Stack.Screen
           name="UpdateProgress"
           component={UpdateProgressScreen}
+          options={{
+            gestureEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="Stats"
+          component={StatsScreen}
+          options={{
+            gestureEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="Settings"
+          component={SettingsScreen}
           options={{
             gestureEnabled: true,
           }}

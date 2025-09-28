@@ -11,16 +11,24 @@ import {
   Platform,
   StatusBar,
   SafeAreaView,
+  Image,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../constants/colors';
+import { useTheme } from '../contexts/ThemeContext';
 import { SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/dimensions';
-import { BookStorage } from '../utils/bookStorage';
+import { BookStorage, BOOK_CATEGORIES } from '../utils/bookStorage';
+import { ImagePickerService } from '../utils/imagePicker';
 
 const AddBookScreen = ({ navigation }) => {
+  const { colors, isDark } = useTheme();
   const [title, setTitle] = useState('');
   const [totalPages, setTotalPages] = useState('');
+  const [category, setCategory] = useState('Other');
+  const [coverImage, setCoverImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   const handleSaveBook = async () => {
     // Validation
@@ -46,6 +54,8 @@ const AddBookScreen = ({ navigation }) => {
       const newBook = await BookStorage.addBook({
         title: title.trim(),
         totalPages: pages,
+        category: category,
+        coverImage: coverImage,
       });
 
       if (newBook) {
@@ -71,7 +81,7 @@ const AddBookScreen = ({ navigation }) => {
   };
 
   const handleCancel = () => {
-    if (title.trim() || totalPages.trim()) {
+    if (title.trim() || totalPages.trim() || coverImage) {
       Alert.alert(
         'Discard Changes',
         'Are you sure you want to discard your changes?',
@@ -85,14 +95,284 @@ const AddBookScreen = ({ navigation }) => {
     }
   };
 
+  const handleImagePicker = () => {
+    Alert.alert(
+      'Add Book Cover',
+      'Choose how you want to add a book cover',
+      [
+        { text: 'Take Photo', onPress: () => takePhoto() },
+        { text: 'Choose from Gallery', onPress: () => pickFromGallery() },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  };
+
+  const takePhoto = async () => {
+    try {
+      const result = await ImagePickerService.takePhoto();
+      if (result.success) {
+        setCoverImage(result.uri);
+      } else if (result.error) {
+        Alert.alert('Error', result.error);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to take photo');
+    }
+  };
+
+  const pickFromGallery = async () => {
+    try {
+      const result = await ImagePickerService.pickImageFromGallery();
+      if (result.success) {
+        setCoverImage(result.uri);
+      } else if (result.error) {
+        Alert.alert('Error', result.error);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to pick image from gallery');
+    }
+  };
+
+  const removeCoverImage = () => {
+    setCoverImage(null);
+  };
+
+  const selectCategory = (selectedCategory) => {
+    setCategory(selectedCategory);
+    setShowCategoryModal(false);
+  };
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: SPACING.xl,
+      paddingVertical: SPACING.lg,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.textMuted,
+    },
+    backButton: {
+      padding: SPACING.sm,
+      marginLeft: -SPACING.sm,
+    },
+    headerTitle: {
+      fontSize: FONT_SIZES.lg,
+      fontWeight: '600',
+      color: colors.textPrimary,
+    },
+    placeholder: {
+      width: 40,
+    },
+    keyboardAvoid: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      paddingHorizontal: SPACING.xl,
+      paddingVertical: SPACING.lg,
+    },
+    formContainer: {
+      marginBottom: SPACING.xl,
+    },
+    inputGroup: {
+      marginBottom: SPACING.xl,
+    },
+    label: {
+      fontSize: FONT_SIZES.md,
+      fontWeight: '600',
+      color: colors.textPrimary,
+      marginBottom: SPACING.sm,
+    },
+    input: {
+      backgroundColor: colors.surface,
+      borderRadius: BORDER_RADIUS.md,
+      padding: SPACING.lg,
+      fontSize: FONT_SIZES.md,
+      color: colors.textPrimary,
+      borderWidth: 1,
+      borderColor: colors.textMuted,
+    },
+    characterCount: {
+      fontSize: FONT_SIZES.xs,
+      color: colors.textMuted,
+      textAlign: 'right',
+      marginTop: SPACING.xs,
+    },
+    helperText: {
+      fontSize: FONT_SIZES.sm,
+      color: colors.textSecondary,
+      marginTop: SPACING.xs,
+    },
+    categorySelector: {
+      backgroundColor: colors.surface,
+      borderRadius: BORDER_RADIUS.md,
+      padding: SPACING.lg,
+      borderWidth: 1,
+      borderColor: colors.textMuted,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    categoryText: {
+      fontSize: FONT_SIZES.md,
+      color: colors.textPrimary,
+    },
+    coverImageContainer: {
+      alignItems: 'center',
+      marginBottom: SPACING.lg,
+    },
+    coverImage: {
+      width: 120,
+      height: 160,
+      borderRadius: BORDER_RADIUS.md,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.textMuted,
+    },
+    imagePlaceholder: {
+      width: 120,
+      height: 160,
+      borderRadius: BORDER_RADIUS.md,
+      backgroundColor: colors.surface,
+      borderWidth: 2,
+      borderColor: colors.textMuted,
+      borderStyle: 'dashed',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    imagePlaceholderText: {
+      fontSize: FONT_SIZES.sm,
+      color: colors.textMuted,
+      textAlign: 'center',
+      marginTop: SPACING.sm,
+    },
+    addImageButton: {
+      backgroundColor: colors.accent,
+      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.md,
+      paddingHorizontal: SPACING.lg,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: SPACING.sm,
+    },
+    addImageButtonText: {
+      fontSize: FONT_SIZES.sm,
+      fontWeight: '600',
+      color: colors.background,
+      marginLeft: SPACING.sm,
+    },
+    removeImageButton: {
+      backgroundColor: colors.error,
+      borderRadius: BORDER_RADIUS.sm,
+      paddingVertical: SPACING.xs,
+      paddingHorizontal: SPACING.sm,
+      marginTop: SPACING.sm,
+    },
+    removeImageButtonText: {
+      fontSize: FONT_SIZES.xs,
+      fontWeight: '600',
+      color: colors.white,
+    },
+    buttonContainer: {
+      marginTop: 'auto',
+      paddingBottom: SPACING.xl,
+    },
+    saveButton: {
+      backgroundColor: colors.accent,
+      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.lg,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: SPACING.md,
+    },
+    disabledButton: {
+      opacity: 0.6,
+    },
+    saveButtonText: {
+      fontSize: FONT_SIZES.md,
+      fontWeight: '600',
+      color: colors.background,
+      marginLeft: SPACING.sm,
+    },
+    cancelButton: {
+      backgroundColor: 'transparent',
+      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.lg,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.textMuted,
+    },
+    cancelButtonText: {
+      fontSize: FONT_SIZES.md,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    modalContainer: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'flex-end',
+    },
+    modalContent: {
+      backgroundColor: colors.surface,
+      borderTopLeftRadius: BORDER_RADIUS.xl,
+      borderTopRightRadius: BORDER_RADIUS.xl,
+      paddingTop: SPACING.lg,
+      paddingBottom: SPACING.xl,
+      maxHeight: '70%',
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.xl,
+      paddingBottom: SPACING.lg,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.textMuted,
+    },
+    modalTitle: {
+      fontSize: FONT_SIZES.lg,
+      fontWeight: '600',
+      color: colors.textPrimary,
+    },
+    closeButton: {
+      padding: SPACING.sm,
+    },
+    categoryList: {
+      paddingHorizontal: SPACING.xl,
+    },
+    categoryItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: SPACING.lg,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.textMuted,
+    },
+    categoryItemText: {
+      fontSize: FONT_SIZES.md,
+      color: colors.textPrimary,
+      flex: 1,
+    },
+    selectedCategory: {
+      color: colors.accent,
+      fontWeight: '600',
+    },
+  });
+
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
       
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={handleCancel}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />
+          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Add New Book</Text>
         <View style={styles.placeholder} />
@@ -107,6 +387,38 @@ const AddBookScreen = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.formContainer}>
+            {/* Book Cover */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Book Cover (Optional)</Text>
+              <View style={styles.coverImageContainer}>
+                {coverImage ? (
+                  <>
+                    <Image source={{ uri: coverImage }} style={styles.coverImage} />
+                    <TouchableOpacity
+                      style={styles.removeImageButton}
+                      onPress={removeCoverImage}
+                    >
+                      <Text style={styles.removeImageButtonText}>Remove</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <>
+                    <View style={styles.imagePlaceholder}>
+                      <Ionicons name="book-outline" size={32} color={colors.textMuted} />
+                      <Text style={styles.imagePlaceholderText}>No cover image</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.addImageButton}
+                      onPress={handleImagePicker}
+                    >
+                      <Ionicons name="camera" size={16} color={colors.background} />
+                      <Text style={styles.addImageButtonText}>Add Cover</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+              </View>
+            </View>
+
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Book Title</Text>
               <TextInput
@@ -114,7 +426,7 @@ const AddBookScreen = ({ navigation }) => {
                 value={title}
                 onChangeText={setTitle}
                 placeholder="Enter book title"
-                placeholderTextColor={COLORS.textMuted}
+                placeholderTextColor={colors.textMuted}
                 autoCapitalize="words"
                 autoCorrect={true}
                 returnKeyType="next"
@@ -124,13 +436,24 @@ const AddBookScreen = ({ navigation }) => {
             </View>
 
             <View style={styles.inputGroup}>
+              <Text style={styles.label}>Category</Text>
+              <TouchableOpacity
+                style={styles.categorySelector}
+                onPress={() => setShowCategoryModal(true)}
+              >
+                <Text style={styles.categoryText}>{category}</Text>
+                <Ionicons name="chevron-down" size={20} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputGroup}>
               <Text style={styles.label}>Total Pages</Text>
               <TextInput
                 style={styles.input}
                 value={totalPages}
                 onChangeText={setTotalPages}
                 placeholder="Enter total number of pages"
-                placeholderTextColor={COLORS.textMuted}
+                placeholderTextColor={colors.textMuted}
                 keyboardType="numeric"
                 returnKeyType="done"
                 maxLength={6}
@@ -151,7 +474,7 @@ const AddBookScreen = ({ navigation }) => {
                 <Text style={styles.saveButtonText}>Saving...</Text>
               ) : (
                 <>
-                  <Ionicons name="checkmark" size={20} color={COLORS.background} />
+                  <Ionicons name="checkmark" size={20} color={colors.background} />
                   <Text style={styles.saveButtonText}>Add Book</Text>
                 </>
               )}
@@ -167,111 +490,58 @@ const AddBookScreen = ({ navigation }) => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Category Selection Modal */}
+      <Modal
+        visible={showCategoryModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowCategoryModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <TouchableOpacity
+            style={styles.modalContainer}
+            activeOpacity={1}
+            onPress={() => setShowCategoryModal(false)}
+          />
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Category</Text>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setShowCategoryModal(false)}
+              >
+                <Ionicons name="close" size={24} color={colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={BOOK_CATEGORIES}
+              keyExtractor={(item) => item}
+              style={styles.categoryList}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.categoryItem}
+                  onPress={() => selectCategory(item)}
+                >
+                  <Text
+                    style={[
+                      styles.categoryItemText,
+                      category === item && styles.selectedCategory,
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                  {category === item && (
+                    <Ionicons name="checkmark" size={20} color={colors.accent} />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.textMuted,
-  },
-  backButton: {
-    padding: SPACING.sm,
-    marginLeft: -SPACING.sm,
-  },
-  headerTitle: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-  },
-  placeholder: {
-    width: 40,
-  },
-  keyboardAvoid: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.lg,
-  },
-  formContainer: {
-    marginBottom: SPACING.xl,
-  },
-  inputGroup: {
-    marginBottom: SPACING.xl,
-  },
-  label: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.sm,
-  },
-  input: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.lg,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textPrimary,
-    borderWidth: 1,
-    borderColor: COLORS.textMuted,
-  },
-  characterCount: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.textMuted,
-    textAlign: 'right',
-    marginTop: SPACING.xs,
-  },
-  helperText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-    marginTop: SPACING.xs,
-  },
-  buttonContainer: {
-    marginTop: 'auto',
-    paddingBottom: SPACING.xl,
-  },
-  saveButton: {
-    backgroundColor: COLORS.accent,
-    borderRadius: BORDER_RADIUS.md,
-    paddingVertical: SPACING.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: SPACING.md,
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  saveButtonText: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.background,
-    marginLeft: SPACING.sm,
-  },
-  cancelButton: {
-    backgroundColor: 'transparent',
-    borderRadius: BORDER_RADIUS.md,
-    paddingVertical: SPACING.lg,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.textMuted,
-  },
-  cancelButtonText: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-  },
-});
 
 export default AddBookScreen;

@@ -1,13 +1,12 @@
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import AppNavigator from './src/navigation/AppNavigator';
-import { COLORS } from './src/constants/colors';
+import { ThemeProvider } from './src/contexts/ThemeContext';
 
 export default function App() {
   return (
-    <>
-      <StatusBar style="light" backgroundColor={COLORS.primary} />
+    <ThemeProvider>
       <AppNavigator />
-    </>
+    </ThemeProvider>
   );
 }
