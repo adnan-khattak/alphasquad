@@ -5,10 +5,11 @@ import {
   StyleSheet,
   ScrollView,
   StatusBar,
-  SafeAreaView,
+  // SafeAreaView,
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { BarChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
