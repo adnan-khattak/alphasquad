@@ -13,11 +13,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import { SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/dimensions';
 import { NotificationService } from '../utils/notificationService';
 
 const SettingsScreen = ({ navigation }) => {
   const { colors, isDark, toggleTheme } = useTheme();
+  const { user, signOut } = useAuth();
   const [notificationSettings, setNotificationSettings] = useState({
     permissionGranted: false,
     notificationScheduled: false,
@@ -91,13 +93,37 @@ const SettingsScreen = ({ navigation }) => {
     }
   };
 
+  const handleSignOut = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            const result = await signOut();
+            if (result.success) {
+              // Navigation will be handled by AuthContext state change
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const SettingItem = ({ 
     title, 
     subtitle, 
     icon, 
     rightElement, 
     onPress,
-    disabled = false 
+    disabled = false,
+    titleColor
   }) => (
     <TouchableOpacity
       style={[
@@ -116,9 +142,9 @@ const SettingsScreen = ({ navigation }) => {
           <Ionicons name={icon} size={20} color={colors.accent} />
         </View>
         <View style={styles.settingText}>
-          <Text style={[styles.settingTitle, { color: colors.textPrimary }]}>
-            {title}
-          </Text>
+            <Text style={[styles.settingTitle, { color: titleColor || colors.textPrimary }]}>
+              {title}
+            </Text>
           {subtitle && (
             <Text style={[styles.settingSubtitle, { color: colors.textSecondary }]}>
               {subtitle}
@@ -135,24 +161,28 @@ const SettingsScreen = ({ navigation }) => {
       flex: 1,
       backgroundColor: colors.background,
     },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: SPACING.xl,
-      paddingVertical: SPACING.lg,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.textMuted,
-    },
-    backButton: {
-      padding: SPACING.sm,
-      marginLeft: -SPACING.sm,
-    },
-    headerTitle: {
-      fontSize: FONT_SIZES.lg,
-      fontWeight: '600',
-      color: colors.textPrimary,
-    },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.xl,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.lg,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: -SPACING.sm,
+  },
+  headerTitle: {
+    fontSize: FONT_SIZES.xxl,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    letterSpacing: -0.3,
+  },
     placeholder: {
       width: 40,
     },
@@ -176,10 +206,15 @@ const SettingsScreen = ({ navigation }) => {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: SPACING.lg,
-      borderRadius: BORDER_RADIUS.lg,
-      borderWidth: 1,
-      marginBottom: SPACING.md,
+      padding: SPACING.xl,
+      borderRadius: BORDER_RADIUS.xl,
+      borderWidth: 0,
+      marginBottom: SPACING.lg,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      elevation: 3,
     },
     settingLeft: {
       flexDirection: 'row',
@@ -187,23 +222,24 @@ const SettingsScreen = ({ navigation }) => {
       flex: 1,
     },
     iconContainer: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
+      width: 44,
+      height: 44,
+      borderRadius: 22,
       justifyContent: 'center',
       alignItems: 'center',
-      marginRight: SPACING.md,
+      marginRight: SPACING.lg,
     },
     settingText: {
       flex: 1,
     },
     settingTitle: {
-      fontSize: FONT_SIZES.md,
-      fontWeight: '500',
-      marginBottom: SPACING.xs,
+      fontSize: FONT_SIZES.lg,
+      fontWeight: '600',
+      marginBottom: SPACING.sm,
     },
     settingSubtitle: {
-      fontSize: FONT_SIZES.sm,
+      fontSize: FONT_SIZES.md,
+      fontWeight: '500',
     },
     appInfo: {
       alignItems: 'center',
@@ -239,7 +275,18 @@ const SettingsScreen = ({ navigation }) => {
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         {/* Appearance */}
-        <Text style={[styles.sectionTitle, styles.sectionTitleFirst]}>Appearance</Text>
+        {/* User Profile */}
+        <Text style={[styles.sectionTitle, styles.sectionTitleFirst]}>Account</Text>
+        <SettingItem
+          title={user?.user_metadata?.full_name || 'User'}
+          subtitle={user?.email || 'user@example.com'}
+          icon="person-circle"
+          rightElement={
+            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+          }
+        />
+
+        <Text style={styles.sectionTitle}>Appearance</Text>
         <SettingItem
           title="Theme"
           subtitle={isDark ? "Dark mode" : "Light mode"}
@@ -279,6 +326,18 @@ const SettingsScreen = ({ navigation }) => {
             onPress={sendTestNotification}
           />
         )}
+
+        {/* Sign Out */}
+        <SettingItem
+          title="Sign Out"
+          subtitle="Sign out of your account"
+          icon="log-out"
+          titleColor={colors.error}
+          rightElement={
+            <Ionicons name="chevron-forward" size={20} color={colors.error} />
+          }
+          onPress={handleSignOut}
+        />
 
         {/* App Info */}
         <View style={styles.appInfo}>

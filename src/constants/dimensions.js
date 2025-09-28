@@ -12,24 +12,28 @@ export const SPACING = {
   lg: 24,
   xl: 32,
   xxl: 48,
+  xxxl: 64,
 };
 
 export const FONT_SIZES = {
-  xs: 12,
-  sm: 14,
-  md: 16,
-  lg: 18,
-  xl: 20,
-  xxl: 24,
-  xxxl: 32,
+  xs: 11,
+  sm: 13,
+  md: 15,
+  lg: 17,
+  xl: 19,
+  xxl: 22,
+  xxxl: 28,
+  xxxxl: 34,
 };
 
 export const BORDER_RADIUS = {
-  sm: 4,
-  md: 8,
-  lg: 12,
-  xl: 16,
+  xs: 2,
+  sm: 6,
+  md: 10,
+  lg: 14,
+  xl: 18,
   xxl: 24,
+  xxxl: 32,
   round: 50,
 };
 

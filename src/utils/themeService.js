@@ -9,58 +9,66 @@ export const THEMES = {
 
 // Light theme colors
 export const LIGHT_COLORS = {
-  // Minimalist color palette
+  // Modern minimalist color palette
   primary: '#ffffff',
-  secondary: '#f5f5f5',
-  accent: '#000000',
-  success: '#00aa6c',
-  warning: '#ff8800',
-  error: '#ff4444',
+  secondary: '#f8fafc',
+  accent: '#3b82f6',
+  success: '#10b981',
+  warning: '#f59e0b',
+  error: '#ef4444',
   
   // Neutral colors
   white: '#ffffff',
   black: '#000000',
-  gray: '#666666',
-  lightGray: '#e5e5e5',
-  darkGray: '#333333',
+  gray: '#6b7280',
+  lightGray: '#e5e7eb',
+  darkGray: '#374151',
   
   // Background colors
   background: '#ffffff',
-  surface: '#f5f5f5',
+  surface: '#f8fafc',
   card: '#ffffff',
   
   // Text colors
-  textPrimary: '#000000',
-  textSecondary: '#666666',
-  textMuted: '#999999',
+  textPrimary: '#111827',
+  textSecondary: '#6b7280',
+  textMuted: '#9ca3af',
+  
+  // Gradient colors
+  gradientStart: '#ffffff',
+  gradientEnd: '#f8fafc',
 };
 
-// Dark theme colors (existing)
+// Dark theme colors
 export const DARK_COLORS = {
-  // Minimalist color palette
+  // Modern dark color palette
   primary: '#000000',
-  secondary: '#1a1a1a',
-  accent: '#ffffff',
-  success: '#00ff88',
-  warning: '#ffaa00',
-  error: '#ff3366',
+  secondary: '#0f172a',
+  accent: '#3b82f6',
+  success: '#10b981',
+  warning: '#f59e0b',
+  error: '#ef4444',
   
-  // Neutral colors - Clean grays
+  // Neutral colors
   white: '#ffffff',
   black: '#000000',
-  gray: '#8e8e93',
-  lightGray: '#f2f2f7',
-  darkGray: '#1c1c1e',
+  gray: '#64748b',
+  lightGray: '#334155',
+  darkGray: '#0f172a',
   
-  // Background colors - Minimal
-  background: '#000000',
-  surface: '#1c1c1e',
-  card: '#2c2c2e',
+  // Background colors
+  background: '#0f172a',
+  surface: '#1e293b',
+  card: '#334155',
   
   // Text colors
-  textPrimary: '#ffffff',
-  textSecondary: '#8e8e93',
-  textMuted: '#636366',
+  textPrimary: '#f8fafc',
+  textSecondary: '#cbd5e1',
+  textMuted: '#64748b',
+  
+  // Gradient colors
+  gradientStart: '#0f172a',
+  gradientEnd: '#1e293b',
 };
 
 export const ThemeService = {

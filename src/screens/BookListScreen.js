@@ -15,6 +15,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
+import GradientBackground from '../components/GradientBackground';
+import AnimatedCard from '../components/AnimatedCard';
 import { SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/dimensions';
 import { BookStorage, BOOK_CATEGORIES } from '../utils/bookStorage';
 import { NotificationService } from '../utils/notificationService';
@@ -127,12 +129,15 @@ const BookListScreen = ({ navigation }) => {
     );
   };
 
-  const BookCard = ({ item: book }) => {
+  const BookCard = ({ item: book, index }) => {
     const progress = calculateProgress(book.pagesRead, book.totalPages);
     const progressColor = getProgressColor(progress);
 
     return (
-      <View style={[styles.bookCard, { backgroundColor: colors.surface, borderColor: colors.textMuted }]}>
+      <AnimatedCard 
+        style={styles.bookCard} 
+        delay={index * 100}
+      >
         <View style={styles.bookHeader}>
           <View style={styles.bookInfo}>
             <Text style={[styles.bookTitle, { color: colors.textPrimary }]} numberOfLines={2}>
@@ -171,7 +176,7 @@ const BookListScreen = ({ navigation }) => {
         >
           <Text style={[styles.updateButtonText, { color: colors.background }]}>Update Progress</Text>
         </TouchableOpacity>
-      </View>
+      </AnimatedCard>
     );
   };
 
@@ -192,8 +197,9 @@ const BookListScreen = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
+    <GradientBackground colors={[colors.gradientStart, colors.gradientEnd]}>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
       
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.textMuted }]}>
@@ -275,7 +281,7 @@ const BookListScreen = ({ navigation }) => {
       {/* Books List */}
       <FlatList
         data={filteredBooks}
-        renderItem={BookCard}
+        renderItem={({ item, index }) => <BookCard item={item} index={index} />}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
@@ -346,7 +352,8 @@ const BookListScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+      </SafeAreaView>
+    </GradientBackground>
   );
 };
 
@@ -356,14 +363,14 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.lg,
-    borderBottomWidth: 1,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.lg,
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   headerLeft: {
     flex: 1,
@@ -373,150 +380,173 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: '600',
+    fontSize: FONT_SIZES.xxxxl,
+    fontWeight: '700',
     marginBottom: SPACING.xs,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: FONT_SIZES.sm,
+    fontSize: FONT_SIZES.md,
+    fontWeight: '500',
   },
   themeToggle: {
-    padding: SPACING.sm,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: SPACING.sm,
   },
   statsButton: {
-    padding: SPACING.sm,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.sm,
   },
   settingsButton: {
-    padding: SPACING.sm,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   streakContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.md,
-    marginBottom: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderRadius: BORDER_RADIUS.xl,
+    marginBottom: SPACING.lg,
     alignSelf: 'flex-start',
   },
   streakText: {
     fontSize: FONT_SIZES.sm,
     fontWeight: '600',
-    marginLeft: SPACING.xs,
+    marginLeft: SPACING.sm,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.md,
-    marginBottom: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderRadius: BORDER_RADIUS.xl,
+    marginBottom: SPACING.lg,
   },
   searchInput: {
     flex: 1,
     fontSize: FONT_SIZES.md,
-    marginLeft: SPACING.sm,
+    marginLeft: SPACING.md,
+    fontWeight: '500',
   },
   filterContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
+    marginBottom: SPACING.lg,
   },
   filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.md,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderRadius: BORDER_RADIUS.xl,
     borderWidth: 1,
   },
   filterText: {
     fontSize: FONT_SIZES.sm,
-    marginLeft: SPACING.xs,
-    marginRight: SPACING.xs,
+    marginLeft: SPACING.sm,
+    marginRight: SPACING.sm,
+    fontWeight: '500',
   },
   listContainer: {
     paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.md,
+    paddingTop: SPACING.sm,
+    paddingBottom: SPACING.xxxl,
     flexGrow: 1,
   },
   bookCard: {
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg,
-    marginBottom: SPACING.md,
-    borderWidth: 1,
+    marginBottom: SPACING.lg,
   },
   bookHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   bookInfo: {
     flex: 1,
-    marginRight: SPACING.md,
+    marginRight: SPACING.lg,
   },
   bookTitle: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    marginBottom: SPACING.xs,
+    fontSize: FONT_SIZES.xl,
+    fontWeight: '700',
+    marginBottom: SPACING.sm,
+    letterSpacing: -0.3,
+    lineHeight: 24,
   },
   bookCategory: {
     fontSize: FONT_SIZES.xs,
-    fontWeight: '500',
+    fontWeight: '600',
     textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: SPACING.xs,
+    letterSpacing: 1.2,
+    marginBottom: SPACING.sm,
   },
   bookPages: {
-    fontSize: FONT_SIZES.sm,
+    fontSize: FONT_SIZES.md,
+    fontWeight: '500',
   },
   deleteButton: {
-    padding: SPACING.sm,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   progressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.xl,
   },
   progressBar: {
     flex: 1,
-    height: 6,
-    borderRadius: 3,
-    marginRight: SPACING.md,
+    height: 8,
+    borderRadius: BORDER_RADIUS.xl,
+    marginRight: SPACING.lg,
   },
   progressFill: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: BORDER_RADIUS.xl,
   },
   progressText: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '600',
-    minWidth: 40,
+    fontSize: FONT_SIZES.md,
+    fontWeight: '700',
+    minWidth: 50,
     textAlign: 'right',
   },
   updateButton: {
-    borderRadius: BORDER_RADIUS.md,
-    paddingVertical: SPACING.md,
+    borderRadius: BORDER_RADIUS.xl,
+    paddingVertical: SPACING.lg,
     alignItems: 'center',
   },
   updateButtonText: {
-    fontSize: FONT_SIZES.sm,
+    fontSize: FONT_SIZES.md,
     fontWeight: '600',
   },
   fab: {
     position: 'absolute',
     bottom: SPACING.xl,
     right: SPACING.xl,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 8,
+    elevation: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
   },
   emptyState: {
     flex: 1,
