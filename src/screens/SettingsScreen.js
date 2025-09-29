@@ -161,95 +161,90 @@ const SettingsScreen = ({ navigation }) => {
       flex: 1,
       backgroundColor: colors.background,
     },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.xl,
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.lg,
-  },
-  backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: -SPACING.sm,
-  },
-  headerTitle: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    letterSpacing: -0.3,
-  },
-    placeholder: {
-      width: 40,
+  
+    /* Header */
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: SPACING.lg,
+      paddingTop: SPACING.lg,
+      paddingBottom: SPACING.md,
     },
-    scrollView: {
-      flex: 1,
+    backButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
-    content: {
-      padding: SPACING.xl,
+    headerTitle: {
+      fontSize: FONT_SIZES.lg,
+      fontWeight: '700',
+      color: colors.textPrimary,
     },
+    placeholder: { width: 36 },
+  
+    /* Content */
+    scrollView: { flex: 1 },
+    content: { paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm },
+  
     sectionTitle: {
       fontSize: FONT_SIZES.md,
       fontWeight: '600',
       color: colors.textPrimary,
-      marginBottom: SPACING.md,
       marginTop: SPACING.lg,
+      marginBottom: SPACING.sm,
     },
-    sectionTitleFirst: {
-      marginTop: 0,
-    },
+    sectionTitleFirst: { marginTop: 0 },
+  
+    /* Setting Item */
     settingItem: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: SPACING.xl,
-      borderRadius: BORDER_RADIUS.xl,
-      borderWidth: 0,
-      marginBottom: SPACING.lg,
+      paddingVertical: SPACING.md,
+      paddingHorizontal: SPACING.md,
+      borderRadius: BORDER_RADIUS.md,
+      marginBottom: SPACING.sm,
+      backgroundColor: colors.surface,
       shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.08,
-      shadowRadius: 8,
-      elevation: 3,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 3,
+      elevation: 1,
     },
-    settingLeft: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      flex: 1,
-    },
+    settingLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
     iconContainer: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
       justifyContent: 'center',
       alignItems: 'center',
-      marginRight: SPACING.lg,
+      marginRight: SPACING.md,
+      backgroundColor: colors.accent + '20',
     },
-    settingText: {
-      flex: 1,
-    },
+    settingText: { flex: 1 },
     settingTitle: {
-      fontSize: FONT_SIZES.lg,
+      fontSize: FONT_SIZES.md,
       fontWeight: '600',
-      marginBottom: SPACING.sm,
+      marginBottom: 2,
     },
     settingSubtitle: {
-      fontSize: FONT_SIZES.md,
-      fontWeight: '500',
+      fontSize: FONT_SIZES.sm,
+      color: colors.textSecondary,
     },
+  
+    /* App Info */
     appInfo: {
       alignItems: 'center',
-      paddingVertical: SPACING.xl,
+      paddingVertical: SPACING.lg,
       borderTopWidth: 1,
       borderTopColor: colors.textMuted,
-      marginTop: SPACING.xl,
+      marginTop: SPACING.lg,
     },
     appName: {
-      fontSize: FONT_SIZES.lg,
+      fontSize: FONT_SIZES.md,
       fontWeight: '600',
       color: colors.textPrimary,
       marginBottom: SPACING.xs,
@@ -259,6 +254,7 @@ const SettingsScreen = ({ navigation }) => {
       color: colors.textSecondary,
     },
   });
+  
 
   return (
     <SafeAreaView style={styles.container}>

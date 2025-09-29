@@ -1,543 +1,458 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
-  TouchableOpacity,
-  StatusBar,
-  // SafeAreaView,
-  RefreshControl,
-  Alert,
   TextInput,
+  TouchableOpacity,
+  StyleSheet,
   Modal,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
-import GradientBackground from '../components/GradientBackground';
-import AnimatedCard from '../components/AnimatedCard';
 import { SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/dimensions';
-import { BookService, BOOK_CATEGORIES } from '../utils/bookService';
-import { NotificationService } from '../utils/notificationService';
+import GradientBackground from '../components/GradientBackground';
 
 const BookListScreen = ({ navigation }) => {
-  const { colors, isDark, toggleTheme } = useTheme();
+  const { colors, toggleTheme } = useTheme();
+
   const [books, setBooks] = useState([]);
-  const [filteredBooks, setFilteredBooks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [showFilterModal, setShowFilterModal] = useState(false);
-  const [readingStreak, setReadingStreak] = useState({ currentStreak: 0, longestStreak: 0 });
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
-  const loadBooks = async () => {
-    try {
-      const booksData = await BookService.getBooks();
-      // Streaks are now computed from reading history on Stats; keep simple for now
-      setBooks(booksData.map(b => ({
-        id: b.id,
-        title: b.title,
-        totalPages: b.total_pages,
-        pagesRead: b.pages_read,
-        category: b.category,
-        coverImage: b.cover_image,
-        createdAt: b.created_at,
-      })));
-      
-      // Initialize notification service on first load
-      if (booksData.length === 0) {
-        await NotificationService.initialize();
-      }
-    } catch (error) {
-      console.error('Error loading books:', error);
-      Alert.alert('Error', 'Failed to load books');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const streakDays = 5; // Example streak count
 
-  // Filter books based on search query and category
-  const filterBooks = useCallback(() => {
-    let filtered = books;
+  const filteredBooks = books.filter(book =>
+    book.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-    // Filter by search query
-    if (searchQuery.trim()) {
-      filtered = filtered.filter(book =>
-        book.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    // Filter by category
-    if (selectedCategory !== 'All') {
-      filtered = filtered.filter(book => book.category === selectedCategory);
-    }
-
-    setFilteredBooks(filtered);
-  }, [books, searchQuery, selectedCategory]);
-
-  // Update filtered books when dependencies change
-  useEffect(() => {
-    filterBooks();
-  }, [filterBooks]);
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await loadBooks();
-    setRefreshing(false);
-  }, []);
-
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      loadBooks();
-    });
-
-    return unsubscribe;
-  }, [navigation]);
-
-  const calculateProgress = (pagesRead, totalPages) => {
-    if (totalPages === 0) return 0;
-    return Math.round((pagesRead / totalPages) * 100);
-  };
-
-  const getProgressColor = (progress) => {
-    if (progress >= 100) return colors.success;
-    if (progress >= 75) return colors.warning;
-    return colors.accent;
-  };
-
-  const handleUpdateProgress = (book) => {
-    navigation.navigate('UpdateProgress', { book });
-  };
-
-  const handleDeleteBook = (book) => {
-    Alert.alert(
-      'Delete Book',
-      `Are you sure you want to delete "${book.title}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await BookService.deleteBook(book.id);
-              loadBooks();
-              Alert.alert('Success', 'Book deleted successfully');
-            } catch (e) {
-              Alert.alert('Error', 'Failed to delete book');
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const BookCard = ({ item: book, index }) => {
-    const progress = calculateProgress(book.pagesRead, book.totalPages);
-    const progressColor = getProgressColor(progress);
-
-    return (
-      <AnimatedCard 
-        style={styles.bookCard} 
-        delay={index * 100}
-      >
-        <View style={styles.bookHeader}>
-          <View style={styles.bookInfo}>
-            <Text style={[styles.bookTitle, { color: colors.textPrimary }]} numberOfLines={2}>
-              {book.title}
-            </Text>
-            <Text style={[styles.bookCategory, { color: colors.accent }]}>
-              {book.category}
-            </Text>
-            <Text style={[styles.bookPages, { color: colors.textSecondary }]}>
-              {book.pagesRead} / {book.totalPages} pages
-            </Text>
-          </View>
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => handleDeleteBook(book)}
-          >
-            <Ionicons name="trash-outline" size={20} color={colors.textSecondary} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.progressContainer}>
-          <View style={[styles.progressBar, { backgroundColor: colors.textMuted }]}>
-            <View
-              style={[
-                styles.progressFill,
-                { width: `${progress}%`, backgroundColor: progressColor },
-              ]}
-            />
-          </View>
-          <Text style={[styles.progressText, { color: colors.textPrimary }]}>{progress}%</Text>
-        </View>
-
-        <TouchableOpacity
-          style={[styles.updateButton, { backgroundColor: colors.accent }]}
-          onPress={() => handleUpdateProgress(book)}
-        >
-          <Text style={[styles.updateButtonText, { color: colors.background }]}>Update Progress</Text>
-        </TouchableOpacity>
-      </AnimatedCard>
-    );
-  };
-
-  const EmptyState = () => (
-    <View style={styles.emptyState}>
-      <Ionicons name="library-outline" size={64} color={colors.textMuted} />
-      <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Books Yet</Text>
-      <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-        Start your reading journey by adding your first book
+  const renderBook = ({ item }) => (
+    <View style={[styles.bookCard, { backgroundColor: colors.surface }]}>
+      <Text style={[styles.bookTitle, { color: colors.textPrimary }]}>
+        {item.title}
       </Text>
+      <Text style={[styles.bookAuthor, { color: colors.textSecondary }]}>
+        {item.author}
+      </Text>
+
+      {/* Progress Bar */}
+      <View style={styles.progressContainer}>
+        <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
+          <View
+            style={[
+              styles.progressFill,
+              { backgroundColor: colors.accent, width: `${item.progress}%` },
+            ]}
+          />
+        </View>
+        <Text style={[styles.progressText, { color: colors.textSecondary }]}>
+          {item.progress}%
+        </Text>
+      </View>
+
       <TouchableOpacity
-        style={[styles.addFirstBookButton, { backgroundColor: colors.accent }]}
-        onPress={() => navigation.navigate('AddBook')}
+        style={[styles.updateButton, { backgroundColor: colors.accent }]}
       >
-        <Text style={[styles.addFirstBookButtonText, { color: colors.background }]}>Add Your First Book</Text>
+        <Text style={[styles.updateButtonText, { color: colors.background }]}>
+          Update Progress
+        </Text>
       </TouchableOpacity>
     </View>
   );
 
   return (
     <GradientBackground colors={[colors.gradientStart, colors.gradientEnd]}>
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
-      
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.textMuted }]}>
-        <View style={styles.headerTop}>
-          <View style={styles.headerLeft}>
-            <Text style={[styles.title, { color: colors.textPrimary }]}>Reading Tracker</Text>
-            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-              {books.length} {books.length === 1 ? 'book' : 'books'} in your library
-            </Text>
-          </View>
-          <View style={styles.headerRight}>
-            <TouchableOpacity
-              style={styles.themeToggle}
-              onPress={toggleTheme}
-            >
-              <Ionicons 
-                name={isDark ? "sunny" : "moon"} 
-                size={20} 
-                color={colors.textPrimary} 
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.statsButton}
-              onPress={() => navigation.navigate('Stats')}
-            >
-              <Ionicons name="stats-chart-outline" size={20} color={colors.textPrimary} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.settingsButton}
-              onPress={() => navigation.navigate('Settings')}
-            >
-              <Ionicons name="settings-outline" size={20} color={colors.textPrimary} />
-            </TouchableOpacity>
-          </View>
+      {/* HEADER */}
+      <View
+        style={[
+          styles.header,
+          { borderBottomColor: colors.border, backgroundColor: colors.surface },
+        ]}
+      >
+        <View>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
+            Your Library
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            Track your reading journey
+          </Text>
         </View>
 
-        {/* Reading Streak */}
-        {readingStreak.currentStreak > 0 && (
-          <View style={[styles.streakContainer, { backgroundColor: colors.accent + '20' }]}>
-            <Ionicons name="flame" size={16} color={colors.accent} />
-            <Text style={[styles.streakText, { color: colors.accent }]}>
-              {readingStreak.currentStreak} day streak
-            </Text>
-          </View>
-        )}
-
-        {/* Search Bar */}
-        <View style={[styles.searchContainer, { backgroundColor: colors.surface }]}>
-          <Ionicons name="search" size={20} color={colors.textMuted} />
-          <TextInput
-            style={[styles.searchInput, { color: colors.textPrimary }]}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder="Search books..."
-            placeholderTextColor={colors.textMuted}
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={20} color={colors.textMuted} />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Filter Bar */}
-        <View style={styles.filterContainer}>
+        <View style={styles.headerActions}>
           <TouchableOpacity
-            style={[styles.filterButton, { backgroundColor: colors.surface, borderColor: colors.textMuted }]}
-            onPress={() => setShowFilterModal(true)}
+            onPress={toggleTheme}
+            style={[styles.iconButton, { backgroundColor: colors.background }]}
           >
-            <Ionicons name="filter" size={16} color={colors.textPrimary} />
-            <Text style={[styles.filterText, { color: colors.textPrimary }]}>
-              {selectedCategory}
-            </Text>
-            <Ionicons name="chevron-down" size={16} color={colors.textSecondary} />
+            <Ionicons
+              name="moon"
+              size={20}
+              color={colors.textPrimary}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Stats')}
+            style={[styles.iconButton, { backgroundColor: colors.background }]}
+          >
+            <Ionicons
+              name="stats-chart"
+              size={20}
+              color={colors.textPrimary}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Settings')}
+            style={[styles.iconButton, { backgroundColor: colors.background }]}
+          >
+            <Ionicons
+              name="settings"
+              size={20}
+              color={colors.textPrimary}
+            />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Books List */}
-      <FlatList
-        data={filteredBooks}
-        renderItem={({ item, index }) => <BookCard item={item} index={index} />}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        ListEmptyComponent={!loading ? EmptyState : null}
-      />
+      {/* STREAK BADGE */}
+      <View
+        style={[styles.streakBadge, { backgroundColor: colors.accent + '20' }]}
+      >
+        <MaterialCommunityIcons
+          name="fire"
+          size={20}
+          color={colors.accent}
+        />
+        <Text style={[styles.streakText, { color: colors.accent }]}>
+          {streakDays}-day streak
+        </Text>
+      </View>
 
-      {/* Floating Add Button */}
+      {/* SEARCH + FILTER */}
+      <View style={styles.searchFilterRow}>
+        <View
+          style={[styles.searchContainer, { backgroundColor: colors.surface }]}
+        >
+          <Ionicons
+            name="search"
+            size={18}
+            color={colors.textMuted}
+            style={{ marginRight: SPACING.sm }}
+          />
+          <TextInput
+            style={[styles.searchInput, { color: colors.textPrimary }]}
+            placeholder="Search books..."
+            placeholderTextColor={colors.textMuted}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Ionicons
+                name="close-circle"
+                size={18}
+                color={colors.textMuted}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <TouchableOpacity
+          style={[
+            styles.filterButton,
+            {
+              borderColor: colors.accent,
+              backgroundColor: selectedCategory
+                ? colors.accent
+                : colors.surface,
+            },
+          ]}
+          onPress={() => setFilterVisible(true)}
+        >
+          <Ionicons
+            name="filter"
+            size={18}
+            color={selectedCategory ? colors.background : colors.accent}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* BOOK LIST / EMPTY STATE */}
+      {filteredBooks.length > 0 ? (
+        <FlatList
+          data={filteredBooks}
+          renderItem={renderBook}
+          keyExtractor={item => item.id.toString()}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        <View style={styles.emptyState}>
+          <Ionicons
+            name="book-outline"
+            size={64}
+            color={colors.textMuted}
+          />
+          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
+            No books yet
+          </Text>
+          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+            Start your reading journey by adding a book.
+          </Text>
+          <TouchableOpacity
+            style={[styles.addBookButton, { backgroundColor: colors.accent }]}
+            onPress={() => navigation.navigate('AddBook')}
+          >
+            <Text
+              style={[
+                styles.addBookButtonText,
+                { color: colors.background },
+              ]}
+            >
+              + Add Your First Book
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* FAB */}
       <TouchableOpacity
         style={[styles.fab, { backgroundColor: colors.accent }]}
         onPress={() => navigation.navigate('AddBook')}
       >
-        <Ionicons name="add" size={24} color={colors.background} />
+        <Ionicons name="add" size={28} color={colors.background} />
       </TouchableOpacity>
 
-      {/* Filter Modal */}
+      {/* FILTER MODAL */}
       <Modal
-        visible={showFilterModal}
-        transparent={true}
+        visible={filterVisible}
+        transparent
         animationType="slide"
-        onRequestClose={() => setShowFilterModal(false)}
+        onRequestClose={() => setFilterVisible(false)}
       >
-        <View style={styles.modalContainer}>
-          <TouchableOpacity
-            style={styles.modalContainer}
-            activeOpacity={1}
-            onPress={() => setShowFilterModal(false)}
-          />
-          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
-            <View style={[styles.modalHeader, { borderBottomColor: colors.textMuted }]}>
-              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Filter by Category</Text>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setShowFilterModal(false)}
-              >
-                <Ionicons name="close" size={24} color={colors.textPrimary} />
-              </TouchableOpacity>
-            </View>
-            <FlatList
-              data={['All', ...BOOK_CATEGORIES]}
-              keyExtractor={(item) => item}
-              style={styles.categoryList}
-              renderItem={({ item }) => (
+        <View
+          style={[styles.modalOverlay, { backgroundColor: colors.backdrop }]}
+        >
+          <View
+            style={[styles.modalContent, { backgroundColor: colors.surface }]}
+          >
+            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+              Filter by Category
+            </Text>
+            {['All', 'Fiction', 'Non-fiction', 'Self-help', 'Other'].map(
+              category => (
                 <TouchableOpacity
-                  style={[styles.categoryItem, { borderBottomColor: colors.textMuted }]}
+                  key={category}
+                  style={[
+                    styles.categoryOption,
+                    selectedCategory === category && {
+                      backgroundColor: colors.accent,
+                    },
+                  ]}
                   onPress={() => {
-                    setSelectedCategory(item);
-                    setShowFilterModal(false);
+                    setSelectedCategory(category);
+                    setFilterVisible(false);
                   }}
                 >
                   <Text
                     style={[
-                      styles.categoryItemText,
-                      { color: colors.textPrimary },
-                      selectedCategory === item && { color: colors.accent, fontWeight: '600' },
+                      styles.categoryText,
+                      {
+                        color:
+                          selectedCategory === category
+                            ? colors.background
+                            : colors.textPrimary,
+                      },
                     ]}
                   >
-                    {item}
+                    {category}
                   </Text>
-                  {selectedCategory === item && (
-                    <Ionicons name="checkmark" size={20} color={colors.accent} />
+                  {selectedCategory === category && (
+                    <Ionicons
+                      name="checkmark"
+                      size={20}
+                      color={colors.background}
+                    />
                   )}
                 </TouchableOpacity>
-              )}
-            />
+              )
+            )}
+            <TouchableOpacity
+              style={[styles.closeButton, { backgroundColor: colors.accent }]}
+              onPress={() => setFilterVisible(false)}
+            >
+              <Text
+                style={[
+                  styles.closeButtonText,
+                  { color: colors.background },
+                ]}
+              >
+                Close
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
-      </SafeAreaView>
     </GradientBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  // HEADER
   header: {
     paddingHorizontal: SPACING.xl,
     paddingTop: SPACING.xl,
-    paddingBottom: SPACING.lg,
-  },
-  headerTop: {
+    paddingBottom: SPACING.md,
+    borderBottomWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: SPACING.lg,
-  },
-  headerLeft: {
-    flex: 1,
-  },
-  headerRight: {
-    flexDirection: 'row',
     alignItems: 'center',
   },
   title: {
-    fontSize: FONT_SIZES.xxxxl,
-    fontWeight: '700',
-    marginBottom: SPACING.xs,
+    fontSize: FONT_SIZES.xxxl,
+    fontWeight: '800',
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: FONT_SIZES.md,
-    fontWeight: '500',
+    marginTop: 2,
   },
-  themeToggle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: SPACING.sm,
-  },
-  statsButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: SPACING.sm,
-  },
-  settingsButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  streakContainer: {
+  headerActions: {
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderRadius: BORDER_RADIUS.xl,
-    marginBottom: SPACING.lg,
-    alignSelf: 'flex-start',
+    gap: SPACING.md,
   },
-  streakText: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '600',
-    marginLeft: SPACING.sm,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderRadius: BORDER_RADIUS.xl,
-    marginBottom: SPACING.lg,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: FONT_SIZES.md,
-    marginLeft: SPACING.md,
-    fontWeight: '500',
-  },
-  filterContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginBottom: SPACING.lg,
-  },
-  filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderRadius: BORDER_RADIUS.xl,
-    borderWidth: 1,
-  },
-  filterText: {
-    fontSize: FONT_SIZES.sm,
-    marginLeft: SPACING.sm,
-    marginRight: SPACING.sm,
-    fontWeight: '500',
-  },
-  listContainer: {
-    paddingHorizontal: SPACING.xl,
-    paddingTop: SPACING.sm,
-    paddingBottom: SPACING.xxxl,
-    flexGrow: 1,
-  },
-  bookCard: {
-    marginBottom: SPACING.lg,
-  },
-  bookHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: SPACING.lg,
-  },
-  bookInfo: {
-    flex: 1,
-    marginRight: SPACING.lg,
-  },
-  bookTitle: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '700',
-    marginBottom: SPACING.sm,
-    letterSpacing: -0.3,
-    lineHeight: 24,
-  },
-  bookCategory: {
-    fontSize: FONT_SIZES.xs,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 1.2,
-    marginBottom: SPACING.sm,
-  },
-  bookPages: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '500',
-  },
-  deleteButton: {
+  iconButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
+
+  // STREAK
+  streakBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginTop: SPACING.md,
+    marginLeft: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.lg,
+    marginBottom: SPACING.lg,
+  },
+  streakText: {
+    marginLeft: SPACING.sm,
+    fontWeight: '600',
+  },
+
+  // SEARCH & FILTER
+  searchFilterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: SPACING.xl,
+    marginBottom: SPACING.lg,
+    gap: SPACING.md,
+  },
+  searchContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.md,
+    borderRadius: BORDER_RADIUS.xl,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: FONT_SIZES.md,
+  },
+  filterButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+  },
+
+  // BOOK CARD
+  list: {
+    paddingHorizontal: SPACING.xl,
+    paddingBottom: 100,
+  },
+  bookCard: {
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.lg,
+    marginBottom: SPACING.lg,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  bookTitle: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '700',
+  },
+  bookAuthor: {
+    fontSize: FONT_SIZES.md,
+    marginBottom: SPACING.sm,
+  },
   progressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.md,
   },
   progressBar: {
     flex: 1,
     height: 8,
-    borderRadius: BORDER_RADIUS.xl,
-    marginRight: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
+    marginRight: SPACING.sm,
   },
   progressFill: {
     height: '100%',
-    borderRadius: BORDER_RADIUS.xl,
+    borderRadius: BORDER_RADIUS.lg,
   },
   progressText: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '700',
-    minWidth: 50,
-    textAlign: 'right',
+    fontSize: FONT_SIZES.sm,
+    fontWeight: '600',
   },
   updateButton: {
-    borderRadius: BORDER_RADIUS.xl,
-    paddingVertical: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
+    paddingVertical: SPACING.md,
     alignItems: 'center',
   },
   updateButtonText: {
     fontSize: FONT_SIZES.md,
-    fontWeight: '600',
+    fontWeight: '700',
   },
+
+  // EMPTY STATE
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.xl,
+  },
+  emptyTitle: {
+    fontSize: FONT_SIZES.xl,
+    fontWeight: '700',
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  emptySubtitle: {
+    fontSize: FONT_SIZES.md,
+    textAlign: 'center',
+    marginBottom: SPACING.lg,
+  },
+  addBookButton: {
+    borderRadius: BORDER_RADIUS.xl,
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.xxl,
+  },
+  addBookButtonText: {
+    fontSize: FONT_SIZES.md,
+    fontWeight: '700',
+  },
+
+  // FAB
   fab: {
     position: 'absolute',
     bottom: SPACING.xl,
@@ -547,78 +462,49 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
   },
-  emptyState: {
+
+  // MODAL
+  modalOverlay: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.xl,
-  },
-  emptyTitle: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '600',
-    marginTop: SPACING.lg,
-    marginBottom: SPACING.sm,
-  },
-  emptySubtitle: {
-    fontSize: FONT_SIZES.md,
-    textAlign: 'center',
-    marginBottom: SPACING.xl,
-    lineHeight: 22,
-  },
-  addFirstBookButton: {
-    borderRadius: BORDER_RADIUS.md,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.xl,
-  },
-  addFirstBookButtonText: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    borderTopLeftRadius: BORDER_RADIUS.xl,
-    borderTopRightRadius: BORDER_RADIUS.xl,
-    paddingTop: SPACING.lg,
-    paddingBottom: SPACING.xl,
-    maxHeight: '70%',
+    borderTopLeftRadius: BORDER_RADIUS.xxl,
+    borderTopRightRadius: BORDER_RADIUS.xxl,
+    padding: SPACING.xl,
   },
-  modalHeader: {
+  modalTitle: {
+    fontSize: FONT_SIZES.xl,
+    fontWeight: '700',
+    marginBottom: SPACING.lg,
+  },
+  categoryOption: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: SPACING.xl,
-    paddingBottom: SPACING.lg,
-    borderBottomWidth: 1,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: BORDER_RADIUS.md,
+    marginBottom: SPACING.sm,
   },
-  modalTitle: {
-    fontSize: FONT_SIZES.lg,
+  categoryText: {
+    fontSize: FONT_SIZES.md,
     fontWeight: '600',
   },
   closeButton: {
-    padding: SPACING.sm,
-  },
-  categoryList: {
-    paddingHorizontal: SPACING.xl,
-  },
-  categoryItem: {
-    flexDirection: 'row',
+    marginTop: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
+    paddingVertical: SPACING.md,
     alignItems: 'center',
-    paddingVertical: SPACING.lg,
-    borderBottomWidth: 1,
   },
-  categoryItemText: {
+  closeButtonText: {
     fontSize: FONT_SIZES.md,
-    flex: 1,
+    fontWeight: '700',
   },
 });
 

@@ -149,58 +149,58 @@ const AddBookScreen = ({ navigation }) => {
       flex: 1,
       backgroundColor: colors.background,
     },
+  
+    /* Header */
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingHorizontal: SPACING.xl,
-      paddingTop: SPACING.xl,
-      paddingBottom: SPACING.lg,
+      paddingHorizontal: SPACING.lg,
+      paddingTop: SPACING.lg,
+      paddingBottom: SPACING.md,
     },
     backButton: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
       justifyContent: 'center',
       alignItems: 'center',
-      marginLeft: -SPACING.sm,
     },
     headerTitle: {
-      fontSize: FONT_SIZES.xxl,
+      fontSize: FONT_SIZES.lg,
       fontWeight: '700',
       color: colors.textPrimary,
-      letterSpacing: -0.3,
     },
-    placeholder: {
-      width: 40,
-    },
-    keyboardAvoid: {
-      flex: 1,
-    },
+    placeholder: { width: 36 },
+  
+    /* Content */
     scrollContent: {
       flexGrow: 1,
-      paddingHorizontal: SPACING.xl,
-      paddingVertical: SPACING.lg,
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
     },
-    formContainer: {
-      marginBottom: SPACING.xl,
-    },
-    inputGroup: {
-      marginBottom: SPACING.xl,
-    },
+    formContainer: { marginBottom: SPACING.lg },
+    inputGroup: { marginBottom: SPACING.lg },
+  
     label: {
-      fontSize: FONT_SIZES.lg,
+      fontSize: FONT_SIZES.md,
       fontWeight: '600',
       color: colors.textPrimary,
-      marginBottom: SPACING.md,
+      marginBottom: SPACING.sm,
+    },
+    helperText: {
+      fontSize: FONT_SIZES.sm,
+      fontWeight: '500',
+      color: colors.textPrimary,
+      marginBottom: SPACING.sm,
     },
     input: {
       backgroundColor: colors.surface,
-      borderRadius: BORDER_RADIUS.xl,
-      padding: SPACING.xl,
+      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.md,
+      paddingHorizontal: SPACING.md,
       fontSize: FONT_SIZES.md,
       color: colors.textPrimary,
-      borderWidth: 0,
       fontWeight: '500',
     },
     characterCount: {
@@ -209,16 +209,13 @@ const AddBookScreen = ({ navigation }) => {
       textAlign: 'right',
       marginTop: SPACING.xs,
     },
-    helperText: {
-      fontSize: FONT_SIZES.sm,
-      color: colors.textSecondary,
-      marginTop: SPACING.xs,
-    },
+  
+    /* Category Selector */
     categorySelector: {
       backgroundColor: colors.surface,
-      borderRadius: BORDER_RADIUS.xl,
-      padding: SPACING.xl,
-      borderWidth: 0,
+      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.md,
+      paddingHorizontal: SPACING.md,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
@@ -228,48 +225,45 @@ const AddBookScreen = ({ navigation }) => {
       color: colors.textPrimary,
       fontWeight: '500',
     },
-    coverImageContainer: {
-      alignItems: 'center',
-      marginBottom: SPACING.lg,
-    },
+  
+    /* Cover Image */
+    coverImageContainer: { alignItems: 'center', marginBottom: SPACING.md },
     coverImage: {
-      width: 140,
-      height: 180,
-      borderRadius: BORDER_RADIUS.lg,
+      width: 110,
+      height: 150,
+      borderRadius: BORDER_RADIUS.md,
       backgroundColor: colors.surface,
     },
     imagePlaceholder: {
-      width: 140,
-      height: 180,
-      borderRadius: BORDER_RADIUS.lg,
+      width: 110,
+      height: 150,
+      borderRadius: BORDER_RADIUS.md,
       backgroundColor: colors.surface,
-      borderWidth: 2,
+      borderWidth: 1,
       borderColor: colors.textMuted,
       borderStyle: 'dashed',
       justifyContent: 'center',
       alignItems: 'center',
     },
     imagePlaceholderText: {
-      fontSize: FONT_SIZES.sm,
+      fontSize: FONT_SIZES.xs,
       color: colors.textMuted,
-      textAlign: 'center',
-      marginTop: SPACING.sm,
+      marginTop: SPACING.xs,
     },
     addImageButton: {
       backgroundColor: colors.accent,
-      borderRadius: BORDER_RADIUS.xl,
-      paddingVertical: SPACING.lg,
-      paddingHorizontal: SPACING.xl,
+      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.sm,
+      paddingHorizontal: SPACING.lg,
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: SPACING.md,
+      marginTop: SPACING.sm,
     },
     addImageButtonText: {
       fontSize: FONT_SIZES.sm,
       fontWeight: '600',
       color: colors.background,
-      marginLeft: SPACING.sm,
+      marginLeft: SPACING.xs,
     },
     removeImageButton: {
       backgroundColor: colors.error,
@@ -283,37 +277,31 @@ const AddBookScreen = ({ navigation }) => {
       fontWeight: '600',
       color: colors.white,
     },
+  
+    /* Buttons */
     buttonContainer: {
       marginTop: 'auto',
-      paddingBottom: SPACING.xl,
+      paddingBottom: SPACING.lg,
     },
     saveButton: {
       backgroundColor: colors.accent,
-      borderRadius: BORDER_RADIUS.xl,
-      paddingVertical: SPACING.xl,
+      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.md,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: SPACING.lg,
-      shadowColor: colors.accent,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      elevation: 6,
+      marginBottom: SPACING.md,
     },
-    disabledButton: {
-      opacity: 0.6,
-    },
+    disabledButton: { opacity: 0.6 },
     saveButtonText: {
       fontSize: FONT_SIZES.md,
       fontWeight: '600',
       color: colors.background,
-      marginLeft: SPACING.sm,
+      marginLeft: SPACING.xs,
     },
     cancelButton: {
-      backgroundColor: 'transparent',
       borderRadius: BORDER_RADIUS.md,
-      paddingVertical: SPACING.lg,
+      paddingVertical: SPACING.md,
       alignItems: 'center',
       borderWidth: 1,
       borderColor: colors.textMuted,
@@ -323,6 +311,8 @@ const AddBookScreen = ({ navigation }) => {
       fontWeight: '600',
       color: colors.textSecondary,
     },
+  
+    /* Modal */
     modalContainer: {
       flex: 1,
       backgroundColor: 'rgba(0,0,0,0.5)',
@@ -330,36 +320,31 @@ const AddBookScreen = ({ navigation }) => {
     },
     modalContent: {
       backgroundColor: colors.surface,
-      borderTopLeftRadius: BORDER_RADIUS.xl,
-      borderTopRightRadius: BORDER_RADIUS.xl,
-      paddingTop: SPACING.lg,
-      paddingBottom: SPACING.xl,
+      borderTopLeftRadius: BORDER_RADIUS.lg,
+      borderTopRightRadius: BORDER_RADIUS.lg,
+      paddingTop: SPACING.md,
+      paddingBottom: SPACING.lg,
       maxHeight: '70%',
     },
     modalHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingHorizontal: SPACING.xl,
-      paddingBottom: SPACING.lg,
+      paddingHorizontal: SPACING.lg,
+      paddingBottom: SPACING.md,
       borderBottomWidth: 1,
       borderBottomColor: colors.textMuted,
     },
     modalTitle: {
-      fontSize: FONT_SIZES.lg,
+      fontSize: FONT_SIZES.md,
       fontWeight: '600',
       color: colors.textPrimary,
     },
-    closeButton: {
-      padding: SPACING.sm,
-    },
-    categoryList: {
-      paddingHorizontal: SPACING.xl,
-    },
+    categoryList: { paddingHorizontal: SPACING.lg },
     categoryItem: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: SPACING.lg,
+      paddingVertical: SPACING.md,
       borderBottomWidth: 1,
       borderBottomColor: colors.textMuted,
     },
@@ -368,11 +353,9 @@ const AddBookScreen = ({ navigation }) => {
       color: colors.textPrimary,
       flex: 1,
     },
-    selectedCategory: {
-      color: colors.accent,
-      fontWeight: '600',
-    },
+    selectedCategory: { color: colors.accent, fontWeight: '600' },
   });
+  
 
   return (
     <SafeAreaView style={styles.container}>
