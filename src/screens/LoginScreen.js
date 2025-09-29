@@ -199,118 +199,187 @@ const LoginScreen = ({ navigation }) => {
   });
 
   return (
-    <GradientBackground colors={[colors.gradientStart, colors.gradientEnd]}>
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
-        
+    <GradientBackground colors={[colors.gradientStart, colors.gradientEnd]} style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <StatusBar
+          barStyle={isDark ? 'light-content' : 'dark-content'}
+          backgroundColor={colors.background}
+        />
+  
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.container}
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
         >
           <ScrollView
-            contentContainerStyle={styles.scrollView}
+            contentContainerStyle={{
+              flexGrow: 1,
+              justifyContent: 'center',
+              paddingHorizontal: SPACING.xl,
+              paddingVertical: SPACING.xxl,
+            }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            <View style={styles.content}>
-              {/* Header */}
-              <AnimatedCard style={styles.header} delay={0}>
-                <Text style={styles.logo}>📚</Text>
-                <Text style={styles.title}>Welcome Back</Text>
-                <Text style={styles.subtitle}>
-                  Sign in to continue your reading journey
+            {/* Header */}
+            <View style={{ alignItems: 'center', marginBottom: SPACING.xxxl }}>
+              <Text style={{ fontSize: 56, marginBottom: SPACING.lg }}>📚</Text>
+              <Text style={{
+                fontSize: FONT_SIZES.xxxl,
+                fontWeight: '800',
+                color: colors.textPrimary,
+                marginBottom: SPACING.sm,
+              }}>
+                Welcome Back
+              </Text>
+              <Text style={{
+                fontSize: FONT_SIZES.md,
+                color: colors.textSecondary,
+                textAlign: 'center',
+              }}>
+                Sign in to continue your reading journey
+              </Text>
+            </View>
+  
+            {/* Email */}
+            <View style={{ marginBottom: SPACING.lg }}>
+              <Text style={{
+                fontSize: FONT_SIZES.sm,
+                fontWeight: '600',
+                color: colors.textSecondary,
+                marginBottom: SPACING.sm,
+              }}>
+                Email
+              </Text>
+              <View style={{
+                backgroundColor: colors.surface,
+                borderRadius: BORDER_RADIUS.lg,
+                paddingHorizontal: SPACING.lg,
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}>
+                <TextInput
+                  style={{
+                    flex: 1,
+                    height: 50,
+                    fontSize: FONT_SIZES.md,
+                    color: colors.textPrimary,
+                  }}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Enter your email"
+                  placeholderTextColor={colors.textMuted}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+              {errors.email && (
+                <Text style={{ fontSize: FONT_SIZES.sm, color: colors.error, marginTop: 4 }}>
+                  {errors.email}
                 </Text>
-              </AnimatedCard>
-
-              {/* Login Form */}
-              <AnimatedCard style={styles.form} delay={200}>
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Email</Text>
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={[styles.input, errors.email && { borderColor: colors.error, borderWidth: 1 }]}
-                      value={email}
-                      onChangeText={setEmail}
-                      placeholder="Enter your email"
-                      placeholderTextColor={colors.textMuted}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      returnKeyType="next"
-                    />
-                  </View>
-                  {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Password</Text>
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={[styles.input, errors.password && { borderColor: colors.error, borderWidth: 1 }]}
-                      value={password}
-                      onChangeText={setPassword}
-                      placeholder="Enter your password"
-                      placeholderTextColor={colors.textMuted}
-                      secureTextEntry={!showPassword}
-                      returnKeyType="done"
-                      onSubmitEditing={handleLogin}
-                    />
-                    <TouchableOpacity
-                      style={styles.passwordToggle}
-                      onPress={() => setShowPassword(!showPassword)}
-                    >
-                      <Ionicons
-                        name={showPassword ? 'eye-off' : 'eye'}
-                        size={20}
-                        color={colors.textMuted}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-                </View>
-
-                <TouchableOpacity
-                  style={[styles.loginButton, loading && styles.disabledButton]}
-                  onPress={handleLogin}
-                  disabled={loading}
-                >
-                  <Text style={styles.loginButtonText}>
-                    {loading ? 'Signing In...' : 'Sign In'}
-                  </Text>
+              )}
+            </View>
+  
+            {/* Password */}
+            <View style={{ marginBottom: SPACING.lg }}>
+              <Text style={{
+                fontSize: FONT_SIZES.sm,
+                fontWeight: '600',
+                color: colors.textSecondary,
+                marginBottom: SPACING.sm,
+              }}>
+                Password
+              </Text>
+              <View style={{
+                backgroundColor: colors.surface,
+                borderRadius: BORDER_RADIUS.lg,
+                paddingHorizontal: SPACING.lg,
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}>
+                <TextInput
+                  style={{
+                    flex: 1,
+                    height: 50,
+                    fontSize: FONT_SIZES.md,
+                    color: colors.textPrimary,
+                  }}
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Enter your password"
+                  placeholderTextColor={colors.textMuted}
+                  secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                  <Ionicons
+                    name={showPassword ? 'eye-off' : 'eye'}
+                    size={20}
+                    color={colors.textMuted}
+                  />
                 </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.forgotPasswordButton}
-                  onPress={handleForgotPassword}
-                >
-                  <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-                </TouchableOpacity>
-              </AnimatedCard>
-
-              {/* Sign Up Prompt */}
-              <AnimatedCard style={{ alignItems: 'center' }} delay={400}>
-                <View style={styles.divider}>
-                  <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>or</Text>
-                  <View style={styles.dividerLine} />
-                </View>
-
-                <View style={styles.signupPrompt}>
-                  <Text style={styles.signupPromptText}>Don't have an account?</Text>
-                  <TouchableOpacity
-                    style={styles.signupButton}
-                    onPress={() => navigation.navigate('SignUp')}
-                  >
-                    <Text style={styles.signupButtonText}>Sign Up</Text>
-                  </TouchableOpacity>
-                </View>
-              </AnimatedCard>
+              </View>
+              {errors.password && (
+                <Text style={{ fontSize: FONT_SIZES.sm, color: colors.error, marginTop: 4 }}>
+                  {errors.password}
+                </Text>
+              )}
+            </View>
+  
+            {/* Sign In Button */}
+            <TouchableOpacity
+              style={{
+                backgroundColor: colors.accent,
+                borderRadius: BORDER_RADIUS.lg,
+                height: 52,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginTop: SPACING.md,
+                marginBottom: SPACING.lg,
+                shadowColor: colors.accent,
+                shadowOffset: { width: 0, height: 3 },
+                shadowOpacity: 0.25,
+                shadowRadius: 5,
+                elevation: 4,
+              }}
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              <Text style={{
+                fontSize: FONT_SIZES.lg,
+                fontWeight: '700',
+                color: colors.background,
+              }}>
+                {loading ? 'Signing In...' : 'Sign In'}
+              </Text>
+            </TouchableOpacity>
+  
+            {/* Forgot password */}
+            <TouchableOpacity onPress={handleForgotPassword} style={{ alignSelf: 'center', marginBottom: SPACING.xl }}>
+              <Text style={{ fontSize: FONT_SIZES.sm, color: colors.accent, fontWeight: '600' }}>
+                Forgot Password?
+              </Text>
+            </TouchableOpacity>
+  
+            {/* Divider */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.xl }}>
+              <View style={{ flex: 1, height: 1, backgroundColor: colors.textMuted }} />
+              <Text style={{ marginHorizontal: SPACING.md, color: colors.textMuted }}>or</Text>
+              <View style={{ flex: 1, height: 1, backgroundColor: colors.textMuted }} />
+            </View>
+  
+            {/* Sign Up */}
+            <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+              <Text style={{ color: colors.textSecondary }}>Don’t have an account?</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+                <Text style={{ marginLeft: 6, color: colors.accent, fontWeight: '700' }}>Sign Up</Text>
+              </TouchableOpacity>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
     </GradientBackground>
   );
+  
 };
 
 export default LoginScreen;
