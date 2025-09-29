@@ -15,7 +15,7 @@ import { BarChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/dimensions';
-import { BookStorage } from '../utils/bookStorage';
+import { BookService } from '../utils/bookService';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -32,22 +32,53 @@ const StatsScreen = ({ navigation }) => {
 
   const loadStats = async () => {
     try {
-      const [
-        weeklyPagesRead,
-        averagePagesPerDay,
-        readingStreak,
-        weeklyData,
-      ] = await Promise.all([
-        BookStorage.getWeeklyPagesRead(),
-        BookStorage.getAveragePagesPerDay(7),
-        BookStorage.getReadingStreak(),
-        BookStorage.getReadingStats(7),
+      const [weeklyPagesRead, averagePagesPerDay, weeklyData] = await Promise.all([
+        BookService.getWeeklyPagesRead(),
+        BookService.getAveragePagesPerDay(7),
+        BookService.getReadingStats(7),
       ]);
+
+      // Compute streak based on history from BookService
+      const historyMap = await BookService.getReadingHistory(60);
+      const dates = Object.keys(historyMap).sort();
+      let currentStreak = 0;
+      let longestStreak = 0;
+      const today = new Date();
+      let cursor = new Date(today);
+      // Walk backwards from today; count consecutive days with >0 pages
+      while (true) {
+        const dateStr = cursor.toISOString().slice(0, 10);
+        const pages = historyMap[dateStr] || 0;
+        if (pages > 0) {
+          currentStreak += 1;
+          if (currentStreak > longestStreak) longestStreak = currentStreak;
+        } else {
+          // When breaking the current chain, the longest may be in past; compute full longest too
+          break;
+        }
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      // Compute longest across the window
+      let rolling = 0;
+      longestStreak = 0;
+      const start = new Date(today);
+      start.setDate(start.getDate() - 59);
+      for (let i = 0; i < 60; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        const dateStr = d.toISOString().slice(0, 10);
+        if ((historyMap[dateStr] || 0) > 0) {
+          rolling += 1;
+          if (rolling > longestStreak) longestStreak = rolling;
+        } else {
+          rolling = 0;
+        }
+      }
 
       setStats({
         weeklyPagesRead,
         averagePagesPerDay,
-        readingStreak,
+        readingStreak: { currentStreak, longestStreak },
         weeklyData,
       });
     } catch (error) {

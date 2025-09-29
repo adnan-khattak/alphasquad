@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/dimensions';
-import { BookStorage } from '../utils/bookStorage';
+import { BookService } from '../utils/bookService';
 
 const UpdateProgressScreen = ({ navigation, route }) => {
   const { colors, isDark } = useTheme();
@@ -28,7 +28,16 @@ const UpdateProgressScreen = ({ navigation, route }) => {
   useEffect(() => {
     // Refresh book data when screen focuses
     const loadCurrentBook = async () => {
-      const updatedBook = await BookStorage.getBook(book.id);
+      const updatedBookRaw = await BookService.getBook(book.id);
+      const updatedBook = updatedBookRaw ? {
+        id: updatedBookRaw.id,
+        title: updatedBookRaw.title,
+        totalPages: updatedBookRaw.total_pages,
+        pagesRead: updatedBookRaw.pages_read,
+        category: updatedBookRaw.category,
+        coverImage: updatedBookRaw.cover_image,
+        createdAt: updatedBookRaw.created_at,
+      } : null;
       if (updatedBook) {
         setCurrentBook(updatedBook);
       }
@@ -87,7 +96,16 @@ const UpdateProgressScreen = ({ navigation, route }) => {
     setLoading(true);
 
     try {
-      const updatedBook = await BookStorage.updateProgress(currentBook.id, pagesToAdd);
+      const updatedBookRaw = await BookService.updateProgress(currentBook.id, pagesToAdd);
+      const updatedBook = updatedBookRaw ? {
+        id: updatedBookRaw.id,
+        title: updatedBookRaw.title,
+        totalPages: updatedBookRaw.total_pages,
+        pagesRead: updatedBookRaw.pages_read,
+        category: updatedBookRaw.category,
+        coverImage: updatedBookRaw.cover_image,
+        createdAt: updatedBookRaw.created_at,
+      } : null;
       
       if (updatedBook) {
         const newProgress = calculateProgress(updatedBook.pagesRead, updatedBook.totalPages);

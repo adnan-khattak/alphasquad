@@ -19,7 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/dimensions';
-import { BookStorage, BOOK_CATEGORIES } from '../utils/bookStorage';
+import { BookService, BOOK_CATEGORIES } from '../utils/bookService';
 import { ImagePickerService } from '../utils/imagePicker';
 
 const AddBookScreen = ({ navigation }) => {
@@ -52,7 +52,7 @@ const AddBookScreen = ({ navigation }) => {
     setLoading(true);
 
     try {
-      const newBook = await BookStorage.addBook({
+      const newBook = await BookService.addBook({
         title: title.trim(),
         totalPages: pages,
         category: category,
@@ -75,7 +75,8 @@ const AddBookScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error adding book:', error);
-      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+      const message = (error && error.message) ? error.message : 'An unexpected error occurred. Please try again.';
+      Alert.alert('Error adding book', message);
     } finally {
       setLoading(false);
     }

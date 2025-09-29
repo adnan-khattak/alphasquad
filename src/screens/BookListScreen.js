@@ -18,7 +18,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import GradientBackground from '../components/GradientBackground';
 import AnimatedCard from '../components/AnimatedCard';
 import { SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/dimensions';
-import { BookStorage, BOOK_CATEGORIES } from '../utils/bookStorage';
+import { BookService, BOOK_CATEGORIES } from '../utils/bookService';
 import { NotificationService } from '../utils/notificationService';
 
 const BookListScreen = ({ navigation }) => {
@@ -34,12 +34,17 @@ const BookListScreen = ({ navigation }) => {
 
   const loadBooks = async () => {
     try {
-      const [booksData, streakData] = await Promise.all([
-        BookStorage.getBooks(),
-        BookStorage.getReadingStreak(),
-      ]);
-      setBooks(booksData);
-      setReadingStreak(streakData);
+      const booksData = await BookService.getBooks();
+      // Streaks are now computed from reading history on Stats; keep simple for now
+      setBooks(booksData.map(b => ({
+        id: b.id,
+        title: b.title,
+        totalPages: b.total_pages,
+        pagesRead: b.pages_read,
+        category: b.category,
+        coverImage: b.cover_image,
+        createdAt: b.created_at,
+      })));
       
       // Initialize notification service on first load
       if (booksData.length === 0) {
@@ -116,11 +121,11 @@ const BookListScreen = ({ navigation }) => {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            const success = await BookStorage.deleteBook(book.id);
-            if (success) {
+            try {
+              await BookService.deleteBook(book.id);
               loadBooks();
               Alert.alert('Success', 'Book deleted successfully');
-            } else {
+            } catch (e) {
               Alert.alert('Error', 'Failed to delete book');
             }
           },
