@@ -61,10 +61,11 @@ CREATE TABLE books (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
+  author TEXT,
   total_pages INTEGER NOT NULL,
   pages_read INTEGER DEFAULT 0,
   category TEXT DEFAULT 'General',
-  cover_image_url TEXT,
+  cover_image TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -91,6 +92,7 @@ CREATE POLICY "Users can delete own books" ON books
 CREATE TABLE reading_history (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  book_id UUID REFERENCES books(id) ON DELETE CASCADE,
   date DATE NOT NULL,
   pages_read INTEGER DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -108,6 +110,9 @@ CREATE POLICY "Users can insert own reading history" ON reading_history
 
 CREATE POLICY "Users can update own reading history" ON reading_history
   FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own reading history" ON reading_history
+  FOR DELETE USING (auth.uid() = user_id);
 ```
 
 ## 6. Test Your Setup

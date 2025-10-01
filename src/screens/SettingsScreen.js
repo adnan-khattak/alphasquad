@@ -254,7 +254,7 @@ const SettingsScreen = ({ navigation }) => {
       color: colors.textSecondary,
     },
   });
-  
+   
 
   return (
     <SafeAreaView style={styles.container}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,19 +9,84 @@ import {
   Modal,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import { SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/dimensions';
 import GradientBackground from '../components/GradientBackground';
+import { BookService } from '../utils/bookService';
+import { useAuth } from '../contexts/AuthContext';
 
 const BookListScreen = ({ navigation }) => {
   const { colors, toggleTheme } = useTheme();
+  const { user } = useAuth();
 
   const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterVisible, setFilterVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   const streakDays = 5; // Example streak count
+
+  // Fetch books when component loads or user changes
+  useEffect(() => {
+    const fetchBooks = async () => {
+      if (!user) {
+        setBooks([]);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        const booksData = await BookService.getBooks();
+        // Transform data to include progress percentage
+        const booksWithProgress = booksData.map(book => ({
+          ...book,
+          progress: book.total_pages > 0 ? Math.round((book.pages_read / book.total_pages) * 100) : 0,
+          author: book.author || 'Unknown Author' // Add fallback for author
+        }));
+        setBooks(booksWithProgress);
+      } catch (err) {
+        console.error('Error fetching books:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
+  }, [user]);
+
+  // Function to refresh books (can be called from navigation focus)
+  const refreshBooks = async () => {
+    if (!user) return;
+    
+    try {
+      setError(null);
+      const booksData = await BookService.getBooks();
+      const booksWithProgress = booksData.map(book => ({
+        ...book,
+        progress: book.total_pages > 0 ? Math.round((book.pages_read / book.total_pages) * 100) : 0,
+        author: book.author || 'Unknown Author'
+      }));
+      setBooks(booksWithProgress);
+    } catch (err) {
+      console.error('Error refreshing books:', err);
+      setError(err.message);
+    }
+  };
+
+  // Refresh books when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (user && !loading) {
+        refreshBooks();
+      }
+    }, [user, loading])
+  );
 
   const filteredBooks = books.filter(book =>
     book.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -176,8 +241,46 @@ const BookListScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* BOOK LIST / EMPTY STATE */}
-      {filteredBooks.length > 0 ? (
+      {/* BOOK LIST / EMPTY STATE / LOADING / ERROR */}
+      {loading ? (
+        <View style={styles.loadingState}>
+          <Ionicons
+            name="book-outline"
+            size={64}
+            color={colors.textMuted}
+          />
+          <Text style={[styles.loadingText, { color: colors.textPrimary }]}>
+            Loading your books...
+          </Text>
+        </View>
+      ) : error ? (
+        <View style={styles.errorState}>
+          <Ionicons
+            name="alert-circle-outline"
+            size={64}
+            color={colors.error || colors.accent}
+          />
+          <Text style={[styles.errorTitle, { color: colors.textPrimary }]}>
+            Error loading books
+          </Text>
+          <Text style={[styles.errorSubtitle, { color: colors.textSecondary }]}>
+            {error}
+          </Text>
+          <TouchableOpacity
+            style={[styles.retryButton, { backgroundColor: colors.accent }]}
+            onPress={refreshBooks}
+          >
+            <Text
+              style={[
+                styles.retryButtonText,
+                { color: colors.background },
+              ]}
+            >
+              Try Again
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : filteredBooks.length > 0 ? (
         <FlatList
           data={filteredBooks}
           renderItem={renderBook}
@@ -420,6 +523,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   updateButtonText: {
+    fontSize: FONT_SIZES.md,
+    fontWeight: '700',
+  },
+
+  // LOADING STATE
+  loadingState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.xl,
+  },
+  loadingText: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '600',
+    marginTop: SPACING.md,
+  },
+
+  // ERROR STATE
+  errorState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.xl,
+  },
+  errorTitle: {
+    fontSize: FONT_SIZES.xl,
+    fontWeight: '700',
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  errorSubtitle: {
+    fontSize: FONT_SIZES.md,
+    textAlign: 'center',
+    marginBottom: SPACING.lg,
+  },
+  retryButton: {
+    borderRadius: BORDER_RADIUS.xl,
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.xxl,
+  },
+  retryButtonText: {
     fontSize: FONT_SIZES.md,
     fontWeight: '700',
   },
