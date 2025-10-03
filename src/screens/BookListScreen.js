@@ -116,13 +116,19 @@ const BookListScreen = ({ navigation }) => {
         </Text>
       </View>
 
-      <TouchableOpacity
-        style={[styles.updateButton, { backgroundColor: colors.accent }]}
-      >
-        <Text style={[styles.updateButtonText, { color: colors.background }]}>
-          Update Progress
-        </Text>
-      </TouchableOpacity>
+      <View style={{ flexDirection: 'row', gap: SPACING.md }}>
+        <TouchableOpacity
+          style={[styles.updateButton, { backgroundColor: colors.accent, flex: 1 }]}
+        >
+          <Text style={[styles.updateButtonText, { color: colors.background }]}>Update Progress</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.updateButton, { backgroundColor: colors.background, flex: 1, borderWidth: 1, borderColor: colors.accent }]}
+          onPress={() => navigation.navigate('Read', { title: item.title, author: item.author })}
+        >
+          <Text style={[styles.updateButtonText, { color: colors.accent }]}>Read</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -209,6 +215,10 @@ const BookListScreen = ({ navigation }) => {
             placeholderTextColor={colors.textMuted}
             value={searchQuery}
             onChangeText={setSearchQuery}
+            onFocus={() => {
+              // Navigate to API-powered search screen when tapping the search bar
+              navigation.navigate('BookSearch');
+            }}
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery('')}>

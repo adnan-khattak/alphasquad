@@ -1,4 +1,5 @@
 import supabase from '../config/supabase';
+import { BookMetadata } from './bookMetadata';
 
 // Expected Supabase schema:
 // tables: books, reading_history
@@ -40,7 +41,25 @@ export const BookService = {
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
     if (error) throw error;
-    return data || [];
+    const rows = data || [];
+    // Merge with local metadata and progress
+    const metaMap = await BookMetadata.getAllMetadata();
+    const progressMap = await BookMetadata.getAllProgress();
+    return rows.map(row => {
+      const id = row.id;
+      const meta = metaMap[id] || {};
+      const prog = progressMap[id]?.currentPage || 0;
+      const totalPages = Number(row.total_pages) || Number(meta.totalPages) || 300;
+      return {
+        ...row,
+        author: meta.author || 'Unknown Author',
+        cover_image: row.cover_image || meta.coverImage || null,
+        readUrl: meta.readUrl || null,
+        gutenbergId: meta.gutenbergId || null,
+        pages_read: prog,
+        total_pages: totalPages,
+      };
+    });
   },
 
   async addBook(book) {
@@ -49,7 +68,7 @@ export const BookService = {
     const payload = {
       user_id: userId,
       title: book.title,
-      total_pages: parseInt(book.totalPages, 10),
+      total_pages: parseInt(book.totalPages, 10) || 300,
       pages_read: 0,
       category: book.category || 'Other',
       cover_image: book.coverImage || null,
@@ -60,34 +79,33 @@ export const BookService = {
       .select()
       .single();
     if (error) throw error;
+    // Save local metadata and initialize local progress
+    if (data?.id) {
+      await BookMetadata.setMetadata(data.id, {
+        author: book.author,
+        coverImage: book.coverImage || null,
+        readUrl: book.readUrl || null,
+        gutenbergId: book.gutenbergId || null,
+        totalPages: payload.total_pages,
+      });
+      await BookMetadata.setProgress(data.id, 0);
+    }
     return data;
   },
 
   async updateProgress(bookId, pagesReadToday) {
     const { data: session } = await supabase.auth.getSession();
     const userId = getUserIdOrThrow(session.session);
-    const increment = parseInt(pagesReadToday, 10);
+    const increment = parseInt(pagesReadToday, 10) || 0;
 
-    // Update book pages_read with clamp not exceeding total_pages
-    const { data: book, error: fetchErr } = await supabase
-      .from('books')
-      .select('id, total_pages, pages_read')
-      .eq('id', bookId)
-      .eq('user_id', userId)
-      .single();
-    if (fetchErr) throw fetchErr;
+    // Update local progress only
+    const current = await BookMetadata.getProgress(bookId);
+    const meta = await BookMetadata.getMetadata(bookId);
+    const totalPages = Number(meta?.totalPages) || 300;
+    const newPagesRead = Math.min((current?.currentPage || 0) + increment, totalPages);
+    await BookMetadata.setProgress(bookId, newPagesRead);
 
-    const newPagesRead = Math.min(book.pages_read + increment, book.total_pages);
-    const { data: updated, error: updErr } = await supabase
-      .from('books')
-      .update({ pages_read: newPagesRead })
-      .eq('id', bookId)
-      .eq('user_id', userId)
-      .select()
-      .single();
-    if (updErr) throw updErr;
-
-    // Log reading history for today per user and book (aggregate by date)
+    // Log reading history for today per user and book (aggregate by date) in Supabase
     const today = new Date();
     const dateStr = today.toISOString().slice(0, 10); // YYYY-MM-DD
 
@@ -113,7 +131,7 @@ export const BookService = {
       if (histInsErr) throw histInsErr;
     }
 
-    return updated;
+    return { id: bookId, pages_read: newPagesRead };
   },
 
   async getBook(bookId) {

@@ -13,6 +13,8 @@ import StatsScreen from '../screens/StatsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import LoginScreen from '../screens/LoginScreen';
 import SignUpScreen from '../screens/SignUpScreen';
+import BookSearchScreen from '../screens/BookSearchScreen';
+import ReadScreen from '../screens/ReadScreen';
 
 const Stack = createStackNavigator();
 
@@ -65,6 +67,20 @@ const AppNavigator = () => {
               <Stack.Screen
                 name="Settings"
                 component={SettingsScreen}
+                options={{
+                  gestureEnabled: true,
+                }}
+              />
+              <Stack.Screen
+                name="BookSearch"
+                component={BookSearchScreen}
+                options={{
+                  gestureEnabled: true,
+                }}
+              />
+              <Stack.Screen
+                name="Read"
+                component={ReadScreen}
                 options={{
                   gestureEnabled: true,
                 }}
